@@ -133,19 +133,150 @@ Password: demo123456
 | GET | `/api/images/:filename/file` | Serve image file |
 | DELETE | `/api/images/:id` | Delete image |
 
-## 🤖 MCP Server (Bonus)
+## 🤖 MCP Server
 
-Connect Claude Desktop (or any MCP-compatible AI) to Dobby Drive:
+Connect Claude Desktop (or any MCP-compatible AI) to Dobby Drive for natural language control — list folders, create nested structures, check sizes, and delete folders via chat.
 
-### Claude Desktop Config (`claude_desktop_config.json`):
+### Available Tools
+
+| Tool | Description | Example prompt |
+|------|-------------|----------------|
+| `list_folders` | List folders at any level | "Show me all folders in Projects" |
+| `create_folder` | Create a folder at root or nested | "Create a folder called Campaigns inside Projects" |
+| `get_folder_size` | Get total recursive size | "How big is the Assets folder?" |
+| `delete_folder` | Delete folder and all contents | "Delete the Old folder inside Archive" |
+
+### Build the MCP Server
+
+```bash
+cd mcp-server
+npm install
+npm run build        # outputs to dist/index.js
+```
+
+---
+
+### 🪟 Installation — Claude Desktop (Windows Store / MSIX version)
+
+> The standard `mcpServers` config in `claude_desktop_config.json` **does not work** with the Windows Store (MSIX) version of Claude Desktop due to sandbox restrictions. Use the `.dxt` extension method instead.
+
+#### Option A — Double-click install (recommended)
+
+**Step 1: Install the DXT CLI**
+```bash
+npm install -g @anthropic-ai/dxt
+```
+
+**Step 2: Pack the extension**
+```bash
+cd mcp-server
+dxt pack
+# outputs: dobby-ads-mcp-server-1.0.0.dxt
+```
+
+**Step 3: Install**
+Double-click `dobby-ads-mcp-server-1.0.0.dxt` in File Explorer — Claude Desktop will open an install dialog.
+
+**Step 4: Restart Claude Desktop**
+Right-click the Claude tray icon → Quit → reopen.
+
+---
+
+#### Option B — Manual install (if double-click doesn't work)
+
+This is a known issue on some Windows setups where `.dxt` file association isn't registered.
+
+**Step 1: Copy files**
+```powershell
+$extDir = "$env:LOCALAPPDATA\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\Claude\Claude Extensions\dobby-drive"
+New-Item -ItemType Directory -Path $extDir -Force
+Copy-Item -Recurse "mcp-server\dist"         "$extDir\dist"
+Copy-Item -Recurse "mcp-server\node_modules" "$extDir\node_modules"
+```
+
+**Step 2: Create `manifest.json`** at `$extDir\manifest.json`:
+```json
+{
+  "manifest_version": "0.4",
+  "name": "dobby-drive",
+  "version": "1.0.0",
+  "description": "MCP Server for Dobby Drive - AI-compatible tool server",
+  "author": { "name": "your-name" },
+  "server": {
+    "type": "node",
+    "entry_point": "dist/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/dist/index.js"],
+      "env": {
+        "API_BASE_URL": "https://your-backend/api",
+        "AUTH_EMAIL": "demo@dobby.com",
+        "AUTH_PASSWORD": "demo123456"
+      }
+    }
+  },
+  "license": "MIT"
+}
+```
+
+**Step 3: Register the extension**
+Add the following entry to:
+```
+%LOCALAPPDATA%\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\Claude\extensions-installations.json
+```
+
+Inside the `"extensions"` object:
+```json
+"local.dobby-drive": {
+  "id": "local.dobby-drive",
+  "version": "1.0.0",
+  "hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "installedAt": "2026-01-01T00:00:00.000Z",
+  "manifest": {
+    "manifest_version": "0.4",
+    "name": "dobby-drive",
+    "version": "1.0.0",
+    "description": "MCP Server for Dobby Drive",
+    "author": { "name": "your-name" },
+    "server": {
+      "type": "node",
+      "entry_point": "dist/index.js",
+      "mcp_config": {
+        "command": "node",
+        "args": ["${__dirname}/dist/index.js"],
+        "env": {
+          "API_BASE_URL": "https://your-backend/api",
+          "AUTH_EMAIL": "demo@dobby.com",
+          "AUTH_PASSWORD": "demo123456"
+        }
+      }
+    },
+    "license": "MIT"
+  },
+  "signatureInfo": { "status": "unsigned" },
+  "source": "local"
+}
+```
+
+**Step 4: Restart Claude Desktop** and verify by asking: *"Can you access Dobby Drive?"*
+
+---
+
+### 🖥️ Installation — Claude Desktop (Standard .exe installer)
+
+Use the standard `mcpServers` config. The config file is at:
+```
+%APPDATA%\Claude\claude_desktop_config.json
+```
+
 ```json
 {
   "mcpServers": {
     "dobby-drive": {
-      "command": "npx",
-      "args": ["tsx", "path/to/mcp-server/src/index.ts"],
+      "command": "node",
+      "args": ["C:/path/to/mcp-server/dist/index.js"],
       "env": {
-        "API_BASE_URL": "http://localhost:5000/api",
+        "API_BASE_URL": "https://your-backend/api",
         "AUTH_EMAIL": "demo@dobby.com",
         "AUTH_PASSWORD": "demo123456"
       }
@@ -154,11 +285,18 @@ Connect Claude Desktop (or any MCP-compatible AI) to Dobby Drive:
 }
 ```
 
-### Available MCP Tools:
-- **create_folder** — Create a folder (e.g., "Create a folder called Campaigns inside Projects")
-- **list_folders** — List folders at any level
-- **get_folder_size** — Get total folder size
-- **delete_folder** — Delete a folder and its contents
+Restart Claude Desktop and verify by asking: *"Can you access Dobby Drive?"*
+
+---
+
+### 🍎 Installation — macOS / Linux
+
+Same as the standard `.exe` method above. Config file location:
+
+- **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Linux:** `~/.config/Claude/claude_desktop_config.json`
+
+---
 
 ## 🏗️ Scalability
 

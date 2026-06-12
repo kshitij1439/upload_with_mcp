@@ -1,0 +1,26 @@
+{
+  "dxt_version": "0.1",
+  "name": "dobby-ads-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP Server for Dobby Drive - AI-compatible tool server",
+  "author": {
+    "name": "k"
+  },
+  "server": {
+    "type": "node",
+    "entry_point": "dist/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/dist/index.js"
+      ],
+      "env": {}
+    }
+  },
+  "tools": [
+    {
+      "name": "file-add"
+    }
+  ],
+  "license": "MIT"
+}
