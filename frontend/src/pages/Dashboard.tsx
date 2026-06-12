@@ -21,6 +21,7 @@ interface ImageItem {
   _id: string;
   name: string;
   filename: string;
+  url: string;
   size: number;
   mimeType: string;
 }
@@ -209,6 +210,7 @@ const Dashboard: React.FC = () => {
                       name={image.name}
                       size={image.size}
                       filename={image.filename}
+                      url={image.url}
                       mimeType={image.mimeType}
                       apiBaseUrl={API_BASE}
                       token={token}

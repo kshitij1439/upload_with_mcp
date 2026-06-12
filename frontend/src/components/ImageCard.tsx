@@ -6,6 +6,7 @@ interface ImageCardProps {
   name: string;
   size: number;
   filename: string;
+  url: string;        // ← add this
   mimeType: string;
   apiBaseUrl: string;
   token: string | null;
@@ -19,11 +20,13 @@ const formatSize = (bytes: number): string => {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 };
-const ImageCard: React.FC<ImageCardProps> = ({ id, name, size, filename, apiBaseUrl, onDelete }) => {
+
+const ImageCard: React.FC<ImageCardProps> = ({ id, name, size, filename, url, apiBaseUrl, onDelete }) => {
   const [showPreview, setShowPreview] = useState(false);
   const [imgError, setImgError] = useState(false);
 
-  const imageUrl = `${apiBaseUrl}/images/${filename}/file`;
+  // Use Cloudinary URL if available, fallback to local
+  const imageUrl = url || `${apiBaseUrl}/images/${filename}/file`;  // ← fix
 
   return (
     <>
@@ -49,7 +52,6 @@ const ImageCard: React.FC<ImageCardProps> = ({ id, name, size, filename, apiBase
             onClick={() => setShowPreview(true)}
             onError={() => setImgError(true)}
             style={{ cursor: 'pointer' }}
-            crossOrigin="anonymous"
           />
         ) : (
           <div
@@ -80,7 +82,6 @@ const ImageCard: React.FC<ImageCardProps> = ({ id, name, size, filename, apiBase
             src={imageUrl}
             alt={name}
             onClick={(e) => e.stopPropagation()}
-            crossOrigin="anonymous"
           />
         </div>
       )}
