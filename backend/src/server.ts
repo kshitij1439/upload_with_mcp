@@ -12,6 +12,10 @@ import imageRoutes from './routes/image.routes';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 
 dotenv.config();
+console.log('☁️ CLOUDINARY_CLOUD_NAME:', process.env.CLOUDINARY_CLOUD_NAME || 'NOT SET');
+console.log('☁️ CLOUDINARY_API_KEY:', process.env.CLOUDINARY_API_KEY ? 'SET' : 'NOT SET');
+console.log('☁️ CLOUDINARY_API_SECRET:', process.env.CLOUDINARY_API_SECRET ? 'SET' : 'NOT SET');
+
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '5000', 10);
